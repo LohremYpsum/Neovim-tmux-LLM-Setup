@@ -30,6 +30,7 @@ fi
 link nvim           "$HOME/.config/nvim"
 link tmux/tmux.conf "$HOME/.tmux.conf"
 link bin/dev        "$HOME/.local/bin/dev"
+link ghostty/config.ghostty "$HOME/Library/Application Support/com.mitchellh.ghostty/config.ghostty"
 
 echo
 echo "Fertig. ~/.local/bin muss im PATH sein, damit 'dev' gefunden wird."

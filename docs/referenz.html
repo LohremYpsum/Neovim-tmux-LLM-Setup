@@ -386,15 +386,17 @@ dev</code></pre>
         </tbody>
       </table></div>
       <h3>Wo die Konfiguration liegt</h3>
+      <p>Alle Dateien liegen im Git-Repo <code>~/dotfiles</code>. An den gewohnten Orten stehen nur Symlinks darauf, Änderungen landen also direkt im Repo. Auf einem neuen Rechner richtet <code>~/dotfiles/install.sh</code> alles ein.</p>
       <div class="tbl"><table>
-        <thead><tr><th>Datei</th><th>Inhalt</th></tr></thead>
+        <thead><tr><th>Datei im Repo</th><th>Verlinkt nach</th></tr></thead>
         <tbody>
-          <tr><td><code>~/.config/nvim/</code></td><td>Neovim / LazyVim. Eigene Plugins in <code>lua/plugins/</code></td></tr>
-          <tr><td><code>~/.tmux.conf</code></td><td>tmux. Backup: <code>~/.tmux.conf.bak</code></td></tr>
-          <tr><td><code>~/Library/Application Support/com.mitchellh.ghostty/config.ghostty</code></td><td>Ghostty. Backup daneben als <code>config.ghostty.bak</code></td></tr>
-          <tr><td><code>~/.local/bin/dev</code></td><td>Das Startskript</td></tr>
+          <tr><td><code>nvim/</code></td><td><code>~/.config/nvim</code> · Neovim / LazyVim, eigene Plugins in <code>lua/plugins/</code></td></tr>
+          <tr><td><code>tmux/tmux.conf</code></td><td><code>~/.tmux.conf</code> · tmux</td></tr>
+          <tr><td><code>ghostty/config.ghostty</code></td><td><code>~/Library/Application Support/com.mitchellh.ghostty/config.ghostty</code> · Ghostty</td></tr>
+          <tr><td><code>bin/dev</code></td><td><code>~/.local/bin/dev</code> · das Startskript</td></tr>
         </tbody>
       </table></div>
+      <pre><code>cd ~/dotfiles && git add -A && git commit -m "…" && git push</code></pre>
     </section>
 
     <section id="lernen">
