@@ -1,0 +1,8 @@
+# tmux: Option+d = links|rechts teilen, Option+Shift+d = oben/unten teilen
+# (sendet Ctrl-b % bzw. Ctrl-b ")
+keybind = alt+key_d=text:\x02%
+keybind = alt+shift+key_d=text:\x02\x22
+
+# Nerd Font für Icons in Neovim
+font-family = JetBrainsMono Nerd Font
+font-size = 14
