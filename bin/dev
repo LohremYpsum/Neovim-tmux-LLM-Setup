@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# dev [verzeichnis]  – startet ein Coding-Layout in tmux:
+#   links Neovim (65 %), rechts Claude Code (35 %)
+# Pro Projekt eine eigene tmux-Session; existiert sie schon, wird sie wieder geöffnet.
+# Mit --here wird das Layout als neues Fenster in der laufenden Session angelegt.
+
+dir="$(cd "${1:-$PWD}" && pwd)" || exit 1
+name="$(basename "$dir" | tr '.:' '__')"
+
+if [[ "$2" == "--here" ]]; then
+  win=$(tmux new-window -P -F '#{window_id}' -n "$name" -c "$dir" nvim)
+  tmux split-window -h -l 35% -t "$win" -c "$dir" claude
+  tmux select-pane -t "$win.1"
+  exit 0
+fi
+
+if ! tmux has-session -t "=$name" 2>/dev/null; then
+  tmux new-session -d -s "$name" -n code -c "$dir" nvim
+  tmux split-window -h -l 35% -t "$name:code" -c "$dir" claude
+  tmux select-pane -t "$name:code.1"
+fi
+
+if [[ -n "$TMUX" ]]; then
+  tmux switch-client -t "$name"
+else
+  tmux attach -t "$name"
+fi
