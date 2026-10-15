@@ -1,6 +1,6 @@
 # dotfiles
 
-Neovim (LazyVim) + tmux + Claude Code als Coding-Setup für macOS.
+A terminal coding setup for macOS: Ghostty + tmux + Neovim (LazyVim) + Claude Code.
 
 ## Installation
 
@@ -9,25 +9,28 @@ git clone https://github.com/LohremYpsum/dotfiles.git ~/dotfiles
 ~/dotfiles/install.sh
 ```
 
-`install.sh` installiert die Pakete aus dem `Brewfile` und verlinkt:
+`install.sh` installs the packages from the `Brewfile` and creates these symlinks:
 
-| Repo             | Ziel                 |
-|------------------|----------------------|
-| `nvim/`          | `~/.config/nvim`     |
-| `tmux/tmux.conf` | `~/.tmux.conf`       |
-| `bin/dev`        | `~/.local/bin/dev`   |
+| Repo                     | Target                                                                |
+|--------------------------|-----------------------------------------------------------------------|
+| `nvim/`                  | `~/.config/nvim`                                                      |
+| `tmux/tmux.conf`         | `~/.tmux.conf`                                                        |
+| `ghostty/config.ghostty` | `~/Library/Application Support/com.mitchellh.ghostty/config.ghostty` |
+| `bin/dev`                | `~/.local/bin/dev`                                                    |
 
-Bereits vorhandene Dateien werden als `*.backup-<datum>` gesichert.
+Existing files are moved to `*.backup-<timestamp>` first. The script is idempotent, so it is safe to run again.
+`~/.local/bin` must be on your `PATH` for `dev` to be found.
 
-## Bedienung
+## Usage
 
-- `dev [verzeichnis]` – tmux-Session pro Projekt: Neovim links (65 %), Claude Code rechts (35 %)
-- `Prefix + a` – dasselbe Layout als neues Fenster in der laufenden Session
-- `Ctrl+h/j/k/l` – zwischen Neovim-Splits und tmux-Panes wechseln
-- `Shift+←/→` – Tab wechseln, `Shift+↓` – neuer Tab
-- `Prefix + r` – tmux-Config neu laden
+- `dev [dir]` – one tmux session per project: Neovim on the left (65 %), Claude Code on the right (35 %)
+- `Prefix + a` – open the same layout as a new window in the current session
+- `Ctrl+h/j/k/l` – move between Neovim splits and tmux panes
+- `Option+d` / `Option+Shift+d` – split pane left/right / top/bottom (Ghostty keybind)
+- `Shift+←/→` – previous/next window, `Shift+↓` – new window
+- `Prefix + r` – reload the tmux config
 
-## Referenz
+## Reference
 
-Ausführliche Tastenübersicht für tmux, Neovim und LazyVim (mit Suchfeld): [`docs/referenz.html`](docs/referenz.html).
-Lokal öffnen mit `open ~/dotfiles/docs/referenz.html`.
+A searchable cheat sheet for tmux, Neovim and LazyVim (in German): [`docs/referenz.html`](docs/referenz.html).
+Open it locally with `open ~/dotfiles/docs/referenz.html`.
