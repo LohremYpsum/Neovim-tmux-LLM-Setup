@@ -26,3 +26,8 @@ Bereits vorhandene Dateien werden als `*.backup-<datum>` gesichert.
 - `Ctrl+h/j/k/l` – zwischen Neovim-Splits und tmux-Panes wechseln
 - `Shift+←/→` – Tab wechseln, `Shift+↓` – neuer Tab
 - `Prefix + r` – tmux-Config neu laden
+
+## Referenz
+
+Ausführliche Tastenübersicht für tmux, Neovim und LazyVim (mit Suchfeld): [`docs/referenz.html`](docs/referenz.html).
+Lokal öffnen mit `open ~/dotfiles/docs/referenz.html`.

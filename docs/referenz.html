@@ -1,0 +1,445 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Neovim + tmux Referenz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: feste Inhaltsleiste links (Desktop), rechts ein lesbarer Spaltenfluss aus Tastentabellen; mobil einspaltig */
+:root {
+  --bg: #f4f5f8;
+  --surface: #ffffff;
+  --fg: #1a1e29;
+  --muted: #5d6476;
+  --line: #dde0e8;
+  --accent: #3d55c4;
+  --accent-soft: #e6eafb;
+  --tmux: #24805a;
+  --tmux-soft: #e2f3ea;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --key-bg: #ffffff;
+  --key-edge: #c6cad6;
+  --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12141b; --surface: #1a1d27; --fg: #e3e6ef; --muted: #9aa1b4; --line: #2b2f3d;
+    --accent: #8fa2ff; --accent-soft: #232a4a; --tmux: #5fcf98; --tmux-soft: #173327;
+    --warn: #f0b45a; --warn-soft: #362a15; --key-bg: #232735; --key-edge: #3c4154;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12141b; --surface: #1a1d27; --fg: #e3e6ef; --muted: #9aa1b4; --line: #2b2f3d;
+  --accent: #8fa2ff; --accent-soft: #232a4a; --tmux: #5fcf98; --tmux-soft: #173327;
+  --warn: #f0b45a; --warn-soft: #362a15; --key-bg: #232735; --key-edge: #3c4154;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; } }
+
+/* Navigation */
+nav { position: sticky; top: calc(24px + env(safe-area-inset-top, 0px)); align-self: start; display: flex; flex-direction: column; gap: 16px; }
+@media (max-width: 860px) { nav { position: static; } }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; line-height: 1.2; }
+.brand small { display: block; font-family: var(--font-body); font-weight: 400; font-size: .8rem; color: var(--muted); margin-top: 4px; }
+.search { width: 100%; font: inherit; font-size: .9rem; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); }
+.search:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+.toc { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: .9rem; }
+.toc a { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; color: var(--fg); text-decoration: none; }
+.toc a:hover, .toc a:focus-visible { background: var(--accent-soft); outline: none; }
+.toc .grp { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 12px 8px 2px; }
+@media (max-width: 860px) { .toc { flex-direction: row; flex-wrap: wrap; gap: 4px; } .toc .grp { display: none; } .toc a { border: 1px solid var(--line); background: var(--surface); } }
+
+/* Inhalt */
+main { min-width: 0; display: flex; flex-direction: column; gap: 56px; }
+header h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.05; margin: 0 0 12px; text-wrap: balance; letter-spacing: -.01em; }
+header p { margin: 0; color: var(--muted); max-width: 62ch; }
+section { display: flex; flex-direction: column; gap: 16px; }
+section > h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; line-height: 1.2; margin: 0; text-wrap: balance; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.1rem; margin: 8px 0 0; }
+p { margin: 0; max-width: 68ch; }
+.tag { font-family: var(--font-mono); font-size: .7rem; font-weight: 600; letter-spacing: .04em; padding: 2px 8px; border-radius: 99px; text-transform: lowercase; }
+.tag.nvim { background: var(--accent-soft); color: var(--accent); }
+.tag.tmux { background: var(--tmux-soft); color: var(--tmux); }
+.tag.term { background: var(--line); color: var(--muted); }
+
+/* Tasten */
+kbd {
+  font-family: var(--font-mono); font-size: .82em; font-weight: 600;
+  display: inline-block; min-width: 1.6em; text-align: center;
+  padding: 1px 6px; border: 1px solid var(--key-edge); border-bottom-width: 2px; border-radius: 5px;
+  background: var(--key-bg); color: var(--fg); white-space: nowrap; line-height: 1.5;
+}
+.then { color: var(--muted); font-size: .8em; margin: 0 4px; }
+code { font-family: var(--font-mono); font-size: .88em; background: var(--accent-soft); color: var(--fg); padding: 1px 5px; border-radius: 4px; }
+pre { margin: 0; font-family: var(--font-mono); font-size: .9rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; overflow-x: auto; }
+pre code { background: none; padding: 0; }
+
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+td { padding: 9px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td:first-child { width: 42%; white-space: nowrap; }
+@media (max-width: 520px) { td:first-child { white-space: normal; width: 46%; } td, th { padding-inline: 12px; } }
+
+.note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 16px; border-radius: 0 8px 8px 0; max-width: 72ch; }
+.note.warn { border-color: var(--warn); background: var(--warn-soft); }
+.note strong { font-weight: 600; }
+ol, ul { margin: 0; padding-left: 1.3em; max-width: 68ch; }
+li + li { margin-top: 4px; }
+
+/* Layout-Skizze */
+.screen { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 10px; display: flex; flex-direction: column; gap: 8px; max-width: 640px; }
+.screen-bar { display: flex; gap: 6px; align-items: center; font-size: .75rem; color: var(--muted); font-family: var(--font-mono); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.panes { display: grid; grid-template-columns: 65fr 35fr; gap: 8px; min-height: 150px; }
+.pane { border-radius: 8px; padding: 12px; font-family: var(--font-mono); font-size: .8rem; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pane b { font-family: var(--font-body); font-size: .95rem; }
+.pane.l { background: var(--accent-soft); color: var(--accent); }
+.pane.r { background: var(--tmux-soft); color: var(--tmux); }
+.status { font-family: var(--font-mono); font-size: .72rem; background: var(--tmux-soft); color: var(--tmux); border-radius: 6px; padding: 4px 8px; }
+
+.empty { color: var(--muted); font-style: italic; }
+.foot { color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+
+<div class="wrap">
+  <nav aria-label="Inhalt">
+    <div class="brand">Neovim + tmux<small>Persönliche Referenz · Ghostty · LazyVim · Claude Code</small></div>
+    <input id="q" class="search" type="search" placeholder="Taste oder Befehl suchen …" aria-label="Referenz durchsuchen">
+    <ul class="toc">
+      <li class="grp">Start</li>
+      <li><a href="#setup">Das Setup</a></li>
+      <li><a href="#dev">Projekt öffnen</a></li>
+      <li class="grp">tmux</li>
+      <li><a href="#panes">Panes &amp; Tabs</a></li>
+      <li><a href="#sessions">Sessions beenden</a></li>
+      <li class="grp">Neovim</li>
+      <li><a href="#modi">Modi &amp; Einfügen</a></li>
+      <li><a href="#speichern">Speichern &amp; Schließen</a></li>
+      <li><a href="#bewegen">Cursor bewegen</a></li>
+      <li><a href="#bearbeiten">Löschen, Kopieren, Einfügen</a></li>
+      <li><a href="#suchen">Suchen &amp; Ersetzen</a></li>
+      <li><a href="#dateien">Mehrere Dateien</a></li>
+      <li><a href="#lazyvim">LazyVim-Werkzeuge</a></li>
+      <li class="grp">Hilfe</li>
+      <li><a href="#probleme">Probleme &amp; Dateien</a></li>
+      <li><a href="#lernen">Weiter lernen</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <header>
+      <h1>Coden mit Neovim, tmux und Claude</h1>
+      <p>Alles, was du für den Alltag im Terminal-Setup brauchst. Grün markierte Abschnitte betreffen tmux, blau markierte Neovim. Das Suchfeld links filtert alle Tabellen.</p>
+    </header>
+
+    <section id="setup">
+      <h2>Das Setup</h2>
+      <p>Ghostty ist das Terminal. Darin läuft tmux, das ein Fenster in mehrere Bereiche (Panes) teilt und Sitzungen offen hält. Im linken Pane läuft Neovim als Editor, im rechten Claude Code als KI-Agent.</p>
+      <div class="screen" aria-hidden="true">
+        <div class="screen-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;Ghostty</div>
+        <div class="panes">
+          <div class="pane l"><b>Neovim</b>65 %<br>Code lesen &amp; bearbeiten</div>
+          <div class="pane r"><b>Claude Code</b>35 %<br>Aufgaben geben</div>
+        </div>
+        <div class="status">[mein-projekt] 1:code · tmux-Statusleiste mit Tabs</div>
+      </div>
+      <p>Ändert Claude eine Datei, lädt Neovim sie automatisch neu, sobald du ins Neovim-Pane zurückwechselst.</p>
+    </section>
+
+    <section id="dev">
+      <h2>Projekt öffnen <span class="tag term">terminal</span></h2>
+      <p>Der Befehl <code>dev</code> startet das Layout. Gib den Projektordner an:</p>
+      <pre><code>dev ~/Projekte/mein-projekt</code></pre>
+      <p>Bist du schon im Projektordner, reicht <code>dev</code> allein:</p>
+      <pre><code>cd ~/Projekte/mein-projekt
+dev</code></pre>
+      <div class="tbl"><table>
+        <thead><tr><th>Eingabe</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><code>dev pfad</code></td><td>Session für den Ordner anlegen und öffnen. Der Session-Name ist der Ordnername.</td></tr>
+          <tr><td><code>dev</code></td><td>Dasselbe für das aktuelle Verzeichnis</td></tr>
+          <tr><td><code>dev</code> erneut</td><td>Läuft die Session schon, landest du wieder darin. Es wird keine neue angelegt.</td></tr>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>a</kbd></td><td>Schon in tmux: Layout als neuen Tab im aktuellen Verzeichnis anlegen</td></tr>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>s</kbd></td><td>Liste aller Sessions, um zwischen Projekten zu wechseln</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="panes">
+      <h2>Panes &amp; Tabs <span class="tag tmux">tmux</span></h2>
+      <p>Der tmux-Prefix ist <kbd>Ctrl+b</kbd>. Drücke ihn, lass los und drücke dann die zweite Taste.</p>
+      <h3>Zwischen Panes wechseln</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Tasten</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl+h</kbd> <kbd>Ctrl+j</kbd> <kbd>Ctrl+k</kbd> <kbd>Ctrl+l</kbd></td><td>Links / runter / hoch / rechts, ohne Prefix. Funktioniert genauso bei Neovim-Splits.</td></tr>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>o</kbd></td><td>Zum nächsten Pane</td></tr>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></td><td>Zum Pane in dieser Richtung</td></tr>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>;</kbd></td><td>Zurück zum zuletzt aktiven Pane</td></tr>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>q</kbd></td><td>Pane-Nummern anzeigen, dann Nummer drücken</td></tr>
+          <tr><td>Mausklick</td><td>Pane auswählen, scrollen, Tabs unten anklicken</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Panes teilen und Tabs</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Tasten</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Option+d</kbd></td><td>Pane links/rechts teilen</td></tr>
+          <tr><td><kbd>Option+Shift+d</kbd></td><td>Pane oben/unten teilen</td></tr>
+          <tr><td><kbd>Shift+←</kbd> / <kbd>Shift+→</kbd></td><td>Vorheriger / nächster Tab</td></tr>
+          <tr><td><kbd>Shift+↓</kbd></td><td>Neuer Tab im aktuellen Verzeichnis</td></tr>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>r</kbd></td><td>tmux-Konfiguration neu laden</td></tr>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>Ctrl+l</kbd></td><td>Terminal leeren (<kbd>Ctrl+l</kbd> allein wechselt das Pane)</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="sessions">
+      <h2>Sessions verlassen &amp; beenden <span class="tag tmux">tmux</span></h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Eingabe</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>d</kbd></td><td>Session verlassen (detach). Neovim und Claude laufen weiter, <code>dev</code> holt dich zurück.</td></tr>
+          <tr><td><code>tmux ls</code></td><td>Alle laufenden Sessions anzeigen</td></tr>
+          <tr><td><code>tmux kill-session -t name</code></td><td>Eine Session beenden</td></tr>
+          <tr><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>:</kbd> <code>kill-session</code></td><td>Aktuelle Session aus ihr heraus beenden</td></tr>
+          <tr><td><code>tmux kill-server</code></td><td>Alle Sessions beenden</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note warn"><strong>Achtung:</strong> Beim Beenden einer Session werden Neovim und Claude hart geschlossen und ungespeicherte Änderungen gehen verloren. Sicherer: in Neovim <code>:wqa</code>, in Claude <code>/exit</code>. Sind alle Panes zu, schließt sich die Session von selbst.</div>
+    </section>
+
+    <section id="modi">
+      <h2>Modi &amp; Einfügen <span class="tag nvim">neovim</span></h2>
+      <p>Neovim hat Modi. Im <strong>Normal-Modus</strong> lösen Tasten Befehle aus, im <strong>Einfüge-Modus</strong> tippst du Text. <kbd>Esc</kbd> bringt dich immer zurück in den Normal-Modus. Im Einfüge-Modus steht unten links <code>INSERT</code>.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Taste</th><th>Einfüge-Modus starten …</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>i</kbd></td><td>vor dem Cursor</td></tr>
+          <tr><td><kbd>a</kbd></td><td>nach dem Cursor</td></tr>
+          <tr><td><kbd>I</kbd></td><td>am Anfang der Zeile</td></tr>
+          <tr><td><kbd>A</kbd></td><td>am Ende der Zeile</td></tr>
+          <tr><td><kbd>o</kbd></td><td>in einer neuen Zeile darunter</td></tr>
+          <tr><td><kbd>O</kbd></td><td>in einer neuen Zeile darüber</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>zurück in den Normal-Modus</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note">Für den Anfang reichen <kbd>i</kbd> zum Schreiben und <kbd>Esc</kbd> zum Aufhören.</div>
+    </section>
+
+    <section id="speichern">
+      <h2>Speichern &amp; Schließen <span class="tag nvim">neovim</span></h2>
+      <p>Erst <kbd>Esc</kbd>, dann den Befehl tippen und mit Enter bestätigen.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Eingabe</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><code>:w</code></td><td>Speichern</td></tr>
+          <tr><td><code>:wq</code></td><td>Speichern und Datei schließen</td></tr>
+          <tr><td><code>:wqa</code></td><td>Alle Dateien speichern und Neovim beenden</td></tr>
+          <tr><td><code>:q</code></td><td>Schließen, wenn nichts ungespeichert ist</td></tr>
+          <tr><td><code>:q!</code></td><td>Schließen und Änderungen verwerfen</td></tr>
+          <tr><td><kbd>Ctrl+s</kbd></td><td>Speichern, auch direkt aus dem Einfüge-Modus</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>q</kbd> <kbd>q</kbd></td><td>Neovim beenden, fragt bei ungespeicherten Änderungen nach</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note">Merkhilfe: <code>w</code> = write, <code>q</code> = quit, <code>a</code> = all, <code>!</code> = ohne Nachfrage.</div>
+    </section>
+
+    <section id="bewegen">
+      <h2>Cursor bewegen <span class="tag nvim">neovim</span></h2>
+      <p>Im Normal-Modus. Pfeiltasten und Mausklick funktionieren auch.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Taste</th><th>Bewegung</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd></td><td>Links / runter / hoch / rechts</td></tr>
+          <tr><td><kbd>w</kbd> / <kbd>b</kbd></td><td>Ein Wort vor / zurück</td></tr>
+          <tr><td><kbd>0</kbd> / <kbd>$</kbd></td><td>Zeilenanfang / Zeilenende</td></tr>
+          <tr><td><kbd>gg</kbd> / <kbd>G</kbd></td><td>Dateianfang / Dateiende</td></tr>
+          <tr><td><kbd>42G</kbd></td><td>Zu Zeile 42</td></tr>
+          <tr><td><kbd>Ctrl+d</kbd> / <kbd>Ctrl+u</kbd></td><td>Halbe Seite runter / hoch</td></tr>
+          <tr><td><code>/text</code> + Enter</td><td>Zu „text“ springen, weiter mit <kbd>n</kbd></td></tr>
+          <tr><td><kbd>5j</kbd>, <kbd>3w</kbd></td><td>Zahl davor wiederholt: 5 Zeilen runter, 3 Wörter vor</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd> allein bewegen den Cursor. Mit <kbd>Ctrl</kbd> davor wechseln sie das Pane.</div>
+    </section>
+
+    <section id="bearbeiten">
+      <h2>Löschen, Kopieren, Einfügen <span class="tag nvim">neovim</span></h2>
+      <p>Vim-Befehle sind wie Sätze aufgebaut: <strong>Aktion + Bewegung</strong>. <kbd>d</kbd> heißt löschen, <kbd>w</kbd> heißt Wort, also löscht <kbd>dw</kbd> ein Wort. <kbd>d$</kbd> löscht bis zum Zeilenende, <kbd>y}</kbd> kopiert bis zum Absatzende.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Taste</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>x</kbd></td><td>Zeichen unter dem Cursor löschen</td></tr>
+          <tr><td><kbd>dw</kbd></td><td>Bis zum nächsten Wort löschen</td></tr>
+          <tr><td><kbd>dd</kbd> / <kbd>3dd</kbd></td><td>Zeile / 3 Zeilen löschen</td></tr>
+          <tr><td><kbd>D</kbd></td><td>Vom Cursor bis Zeilenende löschen</td></tr>
+          <tr><td><kbd>yy</kbd> / <kbd>3yy</kbd></td><td>Zeile / 3 Zeilen kopieren (yank)</td></tr>
+          <tr><td><kbd>yw</kbd></td><td>Bis zum nächsten Wort kopieren</td></tr>
+          <tr><td><kbd>p</kbd></td><td>Einfügen nach dem Cursor bzw. unter der Zeile</td></tr>
+          <tr><td><kbd>P</kbd></td><td>Einfügen vor dem Cursor bzw. über der Zeile</td></tr>
+          <tr><td><kbd>u</kbd></td><td>Rückgängig</td></tr>
+          <tr><td><kbd>Ctrl+r</kbd></td><td>Wiederherstellen</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Mit Markieren</h3>
+      <ol>
+        <li><kbd>v</kbd> startet die Markierung ab dem Cursor, <kbd>V</kbd> markiert ganze Zeilen. Mit der Maus ziehen geht auch.</li>
+        <li>Mit Bewegungstasten die Markierung erweitern.</li>
+        <li><kbd>y</kbd> kopiert, <kbd>d</kbd> löscht, <kbd>p</kbd> ersetzt die Markierung.</li>
+      </ol>
+      <div class="note"><strong>Zwischenablage:</strong> Neovim nutzt die macOS-Zwischenablage. Mit <kbd>y</kbd> Kopiertes fügst du mit <kbd>Cmd+V</kbd> überall ein, etwa im Claude-Pane. Gelöschter Text landet auch dort, Ausschneiden ist also löschen und dann <kbd>p</kbd>.</div>
+    </section>
+
+    <section id="suchen">
+      <h2>Suchen &amp; Ersetzen <span class="tag nvim">neovim</span></h2>
+      <h3>In der aktuellen Datei</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Eingabe</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><code>/text</code> + Enter</td><td>Vorwärts suchen</td></tr>
+          <tr><td><code>?text</code> + Enter</td><td>Rückwärts suchen</td></tr>
+          <tr><td><kbd>n</kbd> / <kbd>N</kbd></td><td>Nächster / vorheriger Treffer</td></tr>
+          <tr><td><kbd>*</kbd></td><td>Wort unter dem Cursor suchen</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Hervorhebung ausblenden</td></tr>
+          <tr><td><code>:%s/alt/neu/g</code></td><td>Alle Vorkommen in der Datei ersetzen</td></tr>
+          <tr><td><code>:%s/alt/neu/gc</code></td><td>Jeden Treffer bestätigen: <kbd>y</kbd> ja, <kbd>n</kbd> nein, <kbd>a</kbd> alle, <kbd>q</kbd> abbrechen</td></tr>
+          <tr><td><code>:s/alt/neu/g</code></td><td>Nur in der aktuellen Zeile</td></tr>
+          <tr><td><kbd>V</kbd> markieren, dann <code>:s/alt/neu/g</code></td><td>Nur im markierten Bereich (Neovim ergänzt <code>:'&lt;,'&gt;</code>)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note">Aufbau: <code>%</code> = ganze Datei, <code>s</code> = substitute, <code>g</code> = alle Treffer pro Zeile, <code>c</code> = confirm. Die Vorschau erscheint schon beim Tippen.</div>
+      <h3>Im ganzen Projekt</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Tasten</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Space</kbd> <kbd>/</kbd></td><td>Text in allen Dateien suchen, Enter springt zum Treffer</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>s</kbd> <kbd>r</kbd></td><td>Suchen &amp; Ersetzen im Projekt mit Vorschau (grug-far)</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>r</kbd> (im grug-far-Fenster)</td><td>Ersetzung ausführen</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note">Größere Umbenennungen quer durchs Projekt kannst du auch Claude im rechten Pane auftragen.</div>
+    </section>
+
+    <section id="dateien">
+      <h2>Mehrere Dateien <span class="tag nvim">neovim</span></h2>
+      <p>Öffne einfach nacheinander Dateien mit <kbd>Space</kbd> <kbd>Space</kbd> oder über den Dateibaum. Jede bleibt offen und erscheint oben als Tab. Offene Dateien heißen in Neovim „Buffer“. Sie sind etwas anderes als die tmux-Tabs unten.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Tasten</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Shift+h</kbd> / <kbd>Shift+l</kbd></td><td>Vorherige / nächste offene Datei</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>,</kbd></td><td>Liste aller offenen Dateien</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>b</kbd> <kbd>d</kbd></td><td>Aktuelle Datei schließen</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>b</kbd> <kbd>o</kbd></td><td>Alle anderen Dateien schließen</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>|</kbd></td><td>Fenster links/rechts teilen (Split)</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>-</kbd></td><td>Fenster oben/unten teilen</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>w</kbd> <kbd>d</kbd></td><td>Aktuellen Split schließen</td></tr>
+          <tr><td><kbd>Ctrl+v</kbd> (in der Dateisuche)</td><td>Gewählte Datei im Split nebeneinander öffnen</td></tr>
+          <tr><td><kbd>Ctrl+s</kbd> (in der Dateisuche)</td><td>Gewählte Datei im Split untereinander öffnen</td></tr>
+          <tr><td><code>nvim a.js b.js</code></td><td>Mehrere Dateien direkt beim Start öffnen</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="lazyvim">
+      <h2>LazyVim-Werkzeuge <span class="tag nvim">neovim</span></h2>
+      <p><kbd>Space</kbd> ist die Leader-Taste. Drückst du sie und wartest kurz, zeigt ein Menü alle weiteren Befehle.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Tasten</th><th>Wirkung</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Space</kbd></td><td>Menü mit allen Befehlen</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>Space</kbd></td><td>Datei suchen</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>/</kbd></td><td>Text im Projekt suchen</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>e</kbd></td><td>Dateibaum ein-/ausblenden</td></tr>
+          <tr><td><kbd>Space</kbd> <kbd>g</kbd> <kbd>g</kbd></td><td>lazygit öffnen</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="probleme">
+      <h2>Probleme &amp; Dateien <span class="tag term">terminal</span></h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Problem</th><th>Lösung</th></tr></thead>
+        <tbody>
+          <tr><td><code>command not found: dev</code></td><td>Neues Terminal öffnen oder <code>source ~/.zshrc</code></td></tr>
+          <tr><td>Icons sehen kaputt aus</td><td>Ghostty komplett neu starten, damit die Nerd Font greift</td></tr>
+          <tr><td>tmux-Änderungen greifen nicht</td><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>r</kbd></td></tr>
+          <tr><td><kbd>Ctrl+l</kbd> leert nicht mehr</td><td><kbd>Ctrl+b</kbd><span class="then">dann</span><kbd>Ctrl+l</kbd></td></tr>
+        </tbody>
+      </table></div>
+      <h3>Wo die Konfiguration liegt</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Datei</th><th>Inhalt</th></tr></thead>
+        <tbody>
+          <tr><td><code>~/.config/nvim/</code></td><td>Neovim / LazyVim. Eigene Plugins in <code>lua/plugins/</code></td></tr>
+          <tr><td><code>~/.tmux.conf</code></td><td>tmux. Backup: <code>~/.tmux.conf.bak</code></td></tr>
+          <tr><td><code>~/Library/Application Support/com.mitchellh.ghostty/config.ghostty</code></td><td>Ghostty. Backup daneben als <code>config.ghostty.bak</code></td></tr>
+          <tr><td><code>~/.local/bin/dev</code></td><td>Das Startskript</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="lernen">
+      <h2>Weiter lernen</h2>
+      <ul>
+        <li><code>vimtutor</code> im Terminal: interaktiver Grundkurs, etwa 30 Minuten</li>
+        <li><code>:Tutor</code> in Neovim: derselbe Kurs, direkt im Editor</li>
+        <li><kbd>Space</kbd> drücken und warten: zeigt, was LazyVim sonst noch kann</li>
+      </ul>
+      <p class="empty" id="nohits" hidden>Keine Treffer für diese Suche.</p>
+    </section>
+
+    <p class="foot">Stand: Oktober 2026 · Neovim 0.12 · LazyVim · tmux 3.7</p>
+  </main>
+</div>
+
+<script>
+(function () {
+  var input = document.getElementById('q');
+  var nohits = document.getElementById('nohits');
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main section'));
+  input.addEventListener('input', function () {
+    var q = input.value.trim().toLowerCase();
+    var total = 0;
+    sections.forEach(function (sec) {
+      var rows = sec.querySelectorAll('tbody tr');
+      var hits = 0;
+      rows.forEach(function (tr) {
+        var match = !q || tr.textContent.toLowerCase().indexOf(q) !== -1;
+        tr.hidden = !match;
+        if (match) hits++;
+      });
+      sec.querySelectorAll('.tbl').forEach(function (t) {
+        t.hidden = q && !t.querySelector('tbody tr:not([hidden])');
+      });
+      var textMatch = q && sec.textContent.toLowerCase().indexOf(q) !== -1;
+      var show = !q || hits > 0 || textMatch;
+      if (sec.id !== 'lernen') sec.hidden = !show;
+      if (q) sec.querySelectorAll('p, ol, ul, .note, h3, pre, .screen').forEach(function (el) { el.hidden = !(hits === 0 && textMatch); });
+      else sec.querySelectorAll('p, ol, ul, .note, h3, pre, .screen').forEach(function (el) { el.hidden = el === nohits; });
+      if (show && sec.id !== 'lernen') total++;
+    });
+    nohits.hidden = !q || total > 0;
+  });
+})();
+</script>
+
+</body></html>
